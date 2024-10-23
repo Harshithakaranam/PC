@@ -1,118 +1,54 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+import React, { useEffect } from 'react';
+import { AppRegistry, View } from 'react-native';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import store from './src/redux/store';
+import FloatingActionButton from './src/components/FloatingActionButton';
+import LoginScreen from './src/components/LoginScreen';
+import { name as appName } from './app.json';
+import Toast from 'react-native-toast-message';
+import { loadUsersFromStorage } from './src/redux/authSlice';
+import { RootState, AppDispatch } from './src/redux/store';
+//import ImageGallery from './src/components/ImageGallery';
+import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import { FlatList, StyleSheet, Dimensions, Image, Animated, useWindowDimensions, Modal, TouchableOpacity, Text } from 'react-native';
+ 
+ 
+ 
+const AppContent: React.FC = () => {
+  const dispatch: AppDispatch = useDispatch();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+ 
+  useEffect(() => {
+    dispatch(loadUsersFromStorage());
+  }, [dispatch]);
+ 
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={{ flex: 1 }}>
+      {isLoggedIn ? <FloatingActionButton /> : <LoginScreen />}
     </View>
   );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
+};
+ 
+const App: React.FC = () => {
+ 
+ 
+ 
+ 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <GestureHandlerRootView>
+ 
+      <Provider store={store}>
+        <AppContent />
+        <Toast />
+        {/* <ImageGallery/> */}
+      </Provider>
+    </GestureHandlerRootView>
+ 
+ 
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
+};
+ 
+AppRegistry.registerComponent(appName, () => App);
+ 
 export default App;
+ 
