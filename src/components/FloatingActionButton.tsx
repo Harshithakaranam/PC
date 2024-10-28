@@ -32,15 +32,13 @@ const MIN_COLUMNS = 1;
 
 const FloatingActionButton: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  2;
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [columnCount, setColumnCount] = useState<number>(2);
   const [pendingColumnCount, setPendingColumnCount] = useState<number>(2);
   const dispatch = useDispatch();
   const images = useSelector((state: any) => state.images.byDate);
-  const [columnSelectModalVisible, setColumnSelectModalVisible] =
-    useState<boolean>(false);
+  const [columnSelectModalVisible, setColumnSelectModalVisible] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<{[key: string]: string[];}>({});
   const [selectionMode, setSelectionMode] = useState<string | null>(null);
   const [showFooter, setShowFooter] = useState<boolean>(false);
