@@ -1,50 +1,61 @@
 import React, {useState, useEffect, useCallback, useRef} from 'react';
-import { View,Modal,Button,TouchableOpacity,Text,StyleSheet,FlatList,Image, Dimensions,Animated,useWindowDimensions} from 'react-native';
+import {
+  View,
+  Modal,
+  Button,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  Dimensions,
+  Animated,
+  useWindowDimensions,
+} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {addImage, saveImagesToStorage} from '../redux/imageSlice';
 import Toast from 'react-native-toast-message';
 import {Share} from 'react-native';
-import ImageCropPicker, { Image as CropperImage } from 'react-native-image-crop-picker';
-import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
- 
- 
-const MIN_ZOOM_LEVEL = 1;   
-const MAX_ZOOM_LEVEL = 4;   
+import ImageCropPicker from 'react-native-image-crop-picker';
+import {
+  PinchGestureHandler,
+  PinchGestureHandlerGestureEvent,
+} from 'react-native-gesture-handler';
+
+const MIN_ZOOM_LEVEL = 1;
+const MAX_ZOOM_LEVEL = 4;
 const ZOOMED_OUT_COLUMNS = 4;
 const DEFAULT_COLUMNS = 3;
 const MIN_COLUMNS = 1;
 
-
 const FloatingActionButton: React.FC = () => {
-  const [modalVisible, setModalVisible] = useState<boolean>(false);2
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  2;
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  // const [settingsModalVisible, setSettingsModalVisible] = useState<boolean>(false);
   const [columnCount, setColumnCount] = useState<number>(2);
   const [pendingColumnCount, setPendingColumnCount] = useState<number>(2);
   const dispatch = useDispatch();
   const images = useSelector((state: any) => state.images.byDate);
-  const [columnSelectModalVisible, setColumnSelectModalVisible] = useState<boolean>(false);
-  const [selectedImages, setSelectedImages] = useState<{ [key: string]: string[] }>({});
-  // const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [columnSelectModalVisible, setColumnSelectModalVisible] =
+    useState<boolean>(false);
+  const [selectedImages, setSelectedImages] = useState<{[key: string]: string[];}>({});
   const [selectionMode, setSelectionMode] = useState<string | null>(null);
   const [showFooter, setShowFooter] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [numColumns, setNumColumns] = useState(DEFAULT_COLUMNS);
-  const flatListRef = useRef<FlatList<any>>(null); 
-  const { width } = Dimensions.get('window');
+  const flatListRef = useRef<FlatList<any>>(null);
+  const {width} = Dimensions.get('window');
 
- 
   interface ImageData {
     id: string;
     uri: string;
     type: string;
   }
- 
- 
+
   interface MediaItem {
     uri: string | undefined;
     type: string;
@@ -52,30 +63,26 @@ const FloatingActionButton: React.FC = () => {
     date: string;
     images: ImageData[];
   }
- 
+
   useEffect(() => {
     setSelectionMode(null);
     setShowFooter(false);
   }, []);
- 
+
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => {
       setToastMessage(null);
     }, 2000);
   };
- 
-  // const handleLogout = () => {
-  //   dispatch(logout());
-  // };
- 
-  const handleCancel = () => {
+
+  const handleCancel = useCallback(() => {
     setSelectedImages({});
     setSelectionMode(null);
     setShowFooter(false);
-  };
- 
-  const handleSave = () => {
+  }, [setSelectedImages, setSelectionMode, setShowFooter]);
+
+  const handleSave = useCallback(() => {
     if (Object.keys(selectedImages).length === 0) {
       Toast.show({
         type: 'error',
@@ -84,15 +91,11 @@ const FloatingActionButton: React.FC = () => {
       });
       return;
     }
-    Toast.show({
-      type: 'success',
-      text1: 'Image Saved Successfully',
-    });
+    Toast.show({type: 'success', text1: 'Image Saved Successfully'});
     setSelectedImages({});
+  }, [selectedImages]);
 
-  };
- 
-  const handleSaveImage = () => {
+  const handleSaveImage = useCallback(() => {
     Toast.show({
       type: 'success',
       text1: 'Image Saved Successfully',
@@ -100,26 +103,16 @@ const FloatingActionButton: React.FC = () => {
       autoHide: true,
       bottomOffset: 40,
     });
-  };
- 
-  // const handleSaveVideo = () => {
-  //   Toast.show({
-  //     type: 'success',
-  //     position: 'bottom',
-  //     text1: 'Video Saved',
-  //     text2: 'Your video has been saved successfully!',
-  //     visibilityTime: 3000,
-  //     autoHide: true,
-  //     bottomOffset: 40,
-  //   });
-  // };
- 
-  const handleShare = async () => {
+  }, []);
+
+  const handleShare = useCallback(async () => {
     if (Object.keys(selectedImages).length === 0) {
       Toast.show({
         type: 'error',
         text1: 'No Images Selected',
         text2: 'Please select some images before sharing.',
+        visibilityTime: 3000,
+        autoHide: true,
       });
       return;
     }
@@ -128,7 +121,7 @@ const FloatingActionButton: React.FC = () => {
         message: 'Check out this awesome content!',
         title: 'Share',
       });
- 
+
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
           console.log('Shared with activity type of:', result.activityType);
@@ -142,10 +135,39 @@ const FloatingActionButton: React.FC = () => {
       console.error('Error sharing:', error);
     }
     setSelectedImages({});
+  }, [selectedImages]);
 
-  };
- 
-  const handlePickImage = () => {
+  const handleShareImage = useCallback(() => {
+    Toast.show({
+      type: 'success',
+      text1: 'Image Shared Successfully',
+      visibilityTime: 3000,
+      autoHide: true,
+      bottomOffset: 40,
+    });
+  }, []);
+
+  const handleSaveVideo = useCallback(() => {
+    Toast.show({
+      type: 'success',
+      text1: 'Video Saved Successfully',
+      visibilityTime: 3000,
+      autoHide: true,
+      bottomOffset: 40,
+    });
+  }, []);
+
+  const handleShareVideo = useCallback(() => {
+    Toast.show({
+      type: 'success',
+      text1: ' Video Shared Successfully',
+      visibilityTime: 3000,
+      autoHide: true,
+      bottomOffset: 40,
+    });
+  }, []);
+
+  const handlePickImage = useCallback(() => {
     ImageCropPicker.openPicker({
       mediaType: 'photo',
       cropping: true,
@@ -153,7 +175,7 @@ const FloatingActionButton: React.FC = () => {
       .then(asset => {
         if (asset.path) {
           const selectedDate = new Date().toLocaleDateString();
-          dispatch(addImage({ uri: asset.path, date: selectedDate }));
+          dispatch(addImage({uri: asset.path, date: selectedDate}));
           saveImagesToStorage({
             ...images,
             [selectedDate]: [...(images[selectedDate] || []), asset.path],
@@ -165,16 +187,16 @@ const FloatingActionButton: React.FC = () => {
         console.error('Error picking image:', error);
       });
     setModalVisible(false);
-  };
- 
-  const handlePickVideo = () => {
+  }, [images, dispatch, setImagePreview, setModalVisible]);
+
+  const handlePickVideo = useCallback(() => {
     ImageCropPicker.openPicker({
       mediaType: 'video',
     })
       .then(asset => {
         if (asset.path) {
           const selectedDate = new Date().toLocaleDateString();
-          dispatch(addImage({ uri: asset.path, date: selectedDate }));
+          dispatch(addImage({uri: asset.path, date: selectedDate}));
           saveImagesToStorage({
             ...images,
             [selectedDate]: [...(images[selectedDate] || []), asset.path],
@@ -186,9 +208,9 @@ const FloatingActionButton: React.FC = () => {
         console.error('Error picking video:', error);
       });
     setModalVisible(false);
-  };
- 
-  const handleCamera = () => {
+  }, [images, dispatch, setVideoPreview, setModalVisible]);
+
+  const handleCamera = useCallback(() => {
     ImageCropPicker.openCamera({
       mediaType: 'photo',
       cropping: true,
@@ -196,7 +218,7 @@ const FloatingActionButton: React.FC = () => {
       .then(asset => {
         if (asset.path) {
           const selectedDate = new Date().toLocaleDateString();
-          dispatch(addImage({ uri: asset.path, date: selectedDate }));
+          dispatch(addImage({uri: asset.path, date: selectedDate}));
           saveImagesToStorage({
             ...images,
             [selectedDate]: [...(images[selectedDate] || []), asset.path],
@@ -208,16 +230,16 @@ const FloatingActionButton: React.FC = () => {
         console.error('Error taking photo:', error);
       });
     setModalVisible(false);
-  };
- 
-  const handleRecordVideo = () => {
+  }, [images, dispatch, setImagePreview, setModalVisible]);
+
+  const handleRecordVideo = useCallback(() => {
     ImageCropPicker.openCamera({
       mediaType: 'video',
     })
       .then(asset => {
         if (asset.path) {
           const selectedDate = new Date().toLocaleDateString();
-          dispatch(addImage({ uri: asset.path, date: selectedDate }));
+          dispatch(addImage({uri: asset.path, date: selectedDate}));
           saveImagesToStorage({
             ...images,
             [selectedDate]: [...(images[selectedDate] || []), asset.path],
@@ -229,16 +251,17 @@ const FloatingActionButton: React.FC = () => {
         console.error('Error recording video:', error);
       });
     setModalVisible(false);
-  };
- 
+  }, [images, dispatch, setImagePreview, setModalVisible]);
+
   const screenWidth = Dimensions.get('window').width;
   const itemPadding = 1;
- 
-  const renderItem = ({ item }: { item: { uri: string } }) => {
-    const isSelected = selectionMode && selectedImages[selectionMode]?.includes(item.uri);
+
+  const renderItem = ({item}: {item: {uri: string}}) => {
+    const isSelected =
+      selectionMode && selectedImages[selectionMode]?.includes(item.uri);
     const isVideo = item.uri.endsWith('.mp4');
-    const itemSize = calculateImageWidth(); 
-  
+    const itemSize = calculateImageWidth();
+
     return (
       <TouchableOpacity
         onPress={() => {
@@ -249,7 +272,9 @@ const FloatingActionButton: React.FC = () => {
               if (selectedForDate.includes(item.uri)) {
                 return {
                   ...prevSelected,
-                  [selectionMode]: selectedForDate.filter(uri => uri !== item.uri),
+                  [selectionMode]: selectedForDate.filter(
+                    uri => uri !== item.uri,
+                  ),
                 };
               } else {
                 return {
@@ -269,16 +294,16 @@ const FloatingActionButton: React.FC = () => {
         }}
         style={{
           flex: 1 / numColumns,
-          margin: itemPadding, 
-          height: itemSize, 
+          margin: itemPadding,
+          height: itemSize,
         }}>
         {isVideo ? (
           <View style={styles.media}>
             <Video
-              source={{ uri: item.uri }}
+              source={{uri: item.uri}}
               style={{
-                width: '100%', 
-                height: itemSize, 
+                width: '100%',
+                height: itemSize,
               }}
               resizeMode="cover"
               paused={true}
@@ -293,12 +318,12 @@ const FloatingActionButton: React.FC = () => {
         ) : (
           <View style={styles.media}>
             <Image
-              source={{ uri: item.uri }}
+              source={{uri: item.uri}}
               style={{
-                width: '100%', 
-                height: itemSize, 
+                width: '100%',
+                height: itemSize,
               }}
-              resizeMode="cover" 
+              resizeMode="cover"
             />
           </View>
         )}
@@ -312,9 +337,9 @@ const FloatingActionButton: React.FC = () => {
       </TouchableOpacity>
     );
   };
-  const renderDateHeader = ({ item }: { item: { date: string } }) => {
+  const renderDateHeader = ({item}: {item: {date: string}}) => {
     const isFirstDate = item.date === getImagesByDate()[0]?.date;
-  
+
     return (
       <View style={styles.dateContainer}>
         <Text style={styles.displayDate}>{item.date}</Text>
@@ -322,8 +347,7 @@ const FloatingActionButton: React.FC = () => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.dateButton}
-              onPress={() => handleButtonOne(item.date)}
-            >
+              onPress={() => handleButtonOne(item.date)}>
               <Text style={styles.buttonText}>Select</Text>
             </TouchableOpacity>
             <View style={styles.buttonSpacer} />
@@ -332,7 +356,7 @@ const FloatingActionButton: React.FC = () => {
       </View>
     );
   };
-  
+
   const handleButtonOne = (date: string) => {
     console.log('Button 1 clicked for date:', date);
     if (selectionMode === date) {
@@ -343,105 +367,71 @@ const FloatingActionButton: React.FC = () => {
       setShowFooter(true);
     }
   };
- 
-  // const handleIconPress = (date: string) => {
-  //   setColumnSelectModalVisible(true);
-  // };
- 
- 
-const getImagesByDate = () => {
-  const todayDate = new Date();
-  const yesterdayDate = new Date(todayDate);
-  yesterdayDate.setDate(todayDate.getDate() - 1);
-
-  const todayDateString = todayDate.toLocaleDateString();
-  const yesterdayDateString = yesterdayDate.toLocaleDateString();
 
   // Sort dates and order them from the most recent to the earliest
-  const sortedDates = Object.keys(images).sort((a, b) => {
-    const [dayA, monthA, yearA] = a.split('/').map(Number);
-    const [dayB, monthB, yearB] = b.split('/').map(Number);
+  const getImagesByDate = useCallback(() => {
+    const todayDate = new Date();
+    const yesterdayDate = new Date(todayDate);
+    yesterdayDate.setDate(todayDate.getDate() - 1);
 
-    const dateA = new Date(yearA ?? 0, (monthA ?? 1) - 1, dayA ?? 1);
-    const dateB = new Date(yearB ?? 0, (monthB ?? 1) - 1, dayB ?? 1);
+    const todayDateString = todayDate.toLocaleDateString();
+    const yesterdayDateString = yesterdayDate.toLocaleDateString();
 
-    return dateB.getTime() - dateA.getTime();
-  });
+    const sortedDates = Object.keys(images).sort((a, b) => {
+      const [dayA, monthA, yearA] = a.split('/').map(Number);
+      const [dayB, monthB, yearB] = b.split('/').map(Number);
 
-  const imageGroups = sortedDates.map((date) => {
-    if (images[date] && images[date].length > 0) {
-      let displayDate = date;
+      const dateA = new Date(yearA ?? 0, (monthA ?? 1) - 1, dayA ?? 1);
+      const dateB = new Date(yearB ?? 0, (monthB ?? 1) - 1, dayB ?? 1);
 
-      if (date === todayDateString) {
-        displayDate = 'Today';
-      } else if (date === yesterdayDateString) {
-        displayDate = 'Yesterday';
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    const imageGroups = sortedDates.map(date => {
+      if (images[date] && images[date].length > 0) {
+        let displayDate = date;
+
+        if (date === todayDateString) {
+          displayDate = 'Today';
+        } else if (date === yesterdayDateString) {
+          displayDate = 'Yesterday';
+        }
+
+        return {
+          date: displayDate,
+          data: images[date].map((uri: string) => ({uri, date: displayDate})),
+        };
       }
+      return null;
+    });
 
-      return {
-        date: displayDate,
-        data: images[date].map((uri: string) => ({ uri, date: displayDate })),
-      };
-    }
-    return null;
-  });
+    const filteredGroups = imageGroups.filter(
+      group => group !== null,
+    ) as Array<{date: string; data: {uri: string; date: string}[]}>;
 
-  // Filter out null entries
-  const filteredGroups = imageGroups.filter(
-    (group) => group !== null
-  ) as Array<{ date: string; data: { uri: string; date: string }[] }>;
+    return filteredGroups.sort((a, b) => {
+      if (a.date === 'Today') return -1;
+      if (b.date === 'Today') return 1;
+      if (a.date === 'Yesterday') return -1;
+      if (b.date === 'Yesterday') return 1;
 
-  // Custom sorting to ensure Today, Yesterday, and other dates appear correctly
-  return filteredGroups.sort((a, b) => {
-    if (a.date === 'Today') return -1;
-    if (b.date === 'Today') return 1;
-    if (a.date === 'Yesterday') return -1;
-    if (b.date === 'Yesterday') return 1;
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [images]);
 
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return dateB.getTime() - dateA.getTime();
-  });
-};
-
- 
-// const handleCropImage = () => {
-//   if (imagePreview) {
-//       ImageCropPicker.openCropper({
-//           path: imagePreview,
-//           cropping: true,
-//           mediaType: 'photo'
-//       })
-//       .then((asset: CropperImage) => {
-//           if (asset?.path) {
-//               const selectedDate = new Date().toLocaleDateString();
-//               dispatch(addImage({ uri: asset.path, date: selectedDate }));
-//               saveImagesToStorage({
-//                   ...images,
-//                   [selectedDate]: [...(images[selectedDate] || []), asset.path],
-//               });
-//               setImagePreview(asset.path);
-//           }
-//       })
-//       .catch(error => {
-//           console.error('Error cropping image:', error);
-//           setImagePreview(imagePreview);
-//       });
-//   }
-// };
-//   const handleButton1Click = (date: string) => {
-//     setSelectedDate(date === selectedDate ? null : date);
-//   };
- 
-  const handleImageSelect = (date: string, imageId: string, images: MediaItem[]) => {
+  const handleImageSelect = (
+    date: string,
+    imageId: string,
+    images: MediaItem[],
+  ) => {
     setSelectedImages(prevSelected => {
       const selectedForDate = prevSelected[date] || [];
       const isSelected = selectedForDate.includes(imageId);
       const selectedItem = images.find(image => image.id === imageId);
       const isVideo = selectedItem?.type === 'video';
- 
-     
- 
+
       if (isSelected) {
         const updatedSelection = {
           ...prevSelected,
@@ -469,107 +459,106 @@ const getImagesByDate = () => {
         }
       }
     });
-};
-const handlePinch = Animated.event(
-  [{ nativeEvent: { scale: new Animated.Value(1) } }],
-  {
-    useNativeDriver: false,
-    listener: (event: PinchGestureHandlerGestureEvent) => {
-      const { scale } = event.nativeEvent;
-      console.log(`Pinch Scale: ${scale}`); 
+  };
+  const handlePinch = Animated.event(
+    [{nativeEvent: {scale: new Animated.Value(1)}}],
+    {
+      useNativeDriver: false,
+      listener: (event: PinchGestureHandlerGestureEvent) => {
+        const {scale} = event.nativeEvent;
+        console.log(`Pinch Scale: ${scale}`);
+      },
     },
-  }
-);
+  );
 
+  const onPinchStateChange = (event: {nativeEvent: any}) => {
+    const {nativeEvent} = event;
 
-const onPinchStateChange = (event: { nativeEvent: any; }) => {
-  const { nativeEvent } = event;
+    if (nativeEvent.state === 5) {
+      const newZoomLevel = Math.max(
+        MIN_ZOOM_LEVEL,
+        Math.min(nativeEvent.scale, MAX_ZOOM_LEVEL),
+      );
+      setZoomLevel(newZoomLevel);
+      console.log('Pinch Gesture Started');
 
-  if (nativeEvent.state === 5) {
-    const newZoomLevel = Math.max(MIN_ZOOM_LEVEL, Math.min(nativeEvent.scale, MAX_ZOOM_LEVEL));
-    setZoomLevel(newZoomLevel);
-    console.log('Pinch Gesture Started');
-
-    if (newZoomLevel >= 3.5) {
-      setNumColumns(ZOOMED_OUT_COLUMNS);
-    } else if (newZoomLevel >= 2.5) {
-      setNumColumns(DEFAULT_COLUMNS);
-    } else if (newZoomLevel >= 1.5) {
-      setNumColumns(2);
-    } else {
-      setNumColumns(MIN_COLUMNS);
+      if (newZoomLevel >= 3.5) {
+        setNumColumns(ZOOMED_OUT_COLUMNS);
+      } else if (newZoomLevel >= 2.5) {
+        setNumColumns(DEFAULT_COLUMNS);
+      } else if (newZoomLevel >= 1.5) {
+        setNumColumns(2);
+      } else {
+        setNumColumns(MIN_COLUMNS);
+      }
     }
-  }
-};
+  };
 
-useEffect(() => {
-  if (flatListRef.current) {
-    flatListRef.current.scrollToOffset({ animated: false, offset: 0 });
-  }
-}, [numColumns]);
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({animated: false, offset: 0});
+    }
+  }, [numColumns]);
 
-const calculateImageWidth = () => {
-  return width / numColumns; 
-};
+  const calculateImageWidth = () => {
+    return width / numColumns;
+  };
 
-return (
-  <View style={styles.container}>
-
-    <View style={styles.mediaHeaderContainer}>
-      <Text style={styles.mediaHeading}>Photo Album</Text>
-    </View>
-    
-
-    {selectionMode && (
-      <View style={styles.selectionHeaderContainer}>
-        <View style={styles.selectionHeaderContent}>
-          <Text style={styles.selectionHeaderText}>
-            {selectedImages[selectionMode]?.length || 0} selected
-          </Text>
-          <TouchableOpacity onPress={handleCancel}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
+  return (
+    <View style={styles.container}>
+      <View style={styles.mediaHeaderContainer}>
+        <Text style={styles.mediaHeading}>Photo Album</Text>
       </View>
-    )}
 
-<FlatList
-  ref={flatListRef}
-  data={getImagesByDate()}
-  ListEmptyComponent={() => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Image 
-  source={require('../assets/NoImage.jpg')} 
-  style={{ width: 800, height: 800 }} 
+      {selectionMode && (
+        <View style={styles.selectionHeaderContainer}>
+          <View style={styles.selectionHeaderContent}>
+            <Text style={styles.selectionHeaderText}>
+              {selectedImages[selectionMode]?.length || 0} selected
+            </Text>
+            <TouchableOpacity onPress={handleCancel}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      <FlatList
+        ref={flatListRef}
+        data={getImagesByDate()}
+        ListEmptyComponent={() => (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <Image
+              source={require('../assets/NoImage.jpg')}
+              style={{width: 800, height: 800}}
+            />
+          </View>
+        )}
+        renderItem={({item}) => (
+          <>
+            {renderDateHeader({item})}
+            <PinchGestureHandler
+              onGestureEvent={handlePinch}
+              onHandlerStateChange={onPinchStateChange}>
+              <Animated.View style={{flex: 1}}>
+                <FlatList
+                  data={item.data}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.uri}
+                  numColumns={numColumns}
+                  key={`${item.date}-${numColumns}`}
+                  style={{flex: 1}}
+                />
+              </Animated.View>
+            </PinchGestureHandler>
+          </>
+        )}
+        keyExtractor={item => item.date}
+        style={{flex: 1}}
       />
-      
-    </View>
-  )}
-  renderItem={({ item }) => (
-    <>
-      {renderDateHeader({ item })}
-      <PinchGestureHandler
-        onGestureEvent={handlePinch}
-        onHandlerStateChange={onPinchStateChange}
-      >
-        <Animated.View style={{ flex: 1 }}>
-          <FlatList
-            data={item.data}
-            renderItem={renderItem}
-            keyExtractor={item => item.uri}
-            numColumns={numColumns}
-            key={`${item.date}-${numColumns}`}
-            style={{ flex: 1 }}
-          />
-        </Animated.View>
-      </PinchGestureHandler>
-    </>
-  )}
-  keyExtractor={item => item.date}
-  style={{ flex: 1 }}
-/>
 
- {showFooter && (
+      {showFooter && (
         <View style={styles.footer}>
           <TouchableOpacity style={styles.footerButton} onPress={handleSave}>
             <Text style={styles.footerButtonText}>Save</Text>
@@ -581,7 +570,7 @@ return (
           </TouchableOpacity>
         </View>
       )}
- 
+
       {!selectionMode && (
         <TouchableOpacity
           style={styles.fab}
@@ -589,7 +578,7 @@ return (
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       )}
- 
+
       {/* Column Selection Modal */}
       <Modal
         visible={columnSelectModalVisible}
@@ -632,7 +621,7 @@ return (
           </View>
         </View>
       </Modal>
- 
+
       {/* Modal for Image/Video Picking */}
       <Modal
         visible={modalVisible}
@@ -665,95 +654,93 @@ return (
           </TouchableOpacity>
         </View>
       </Modal>
- 
-   
-     
+
       <Modal transparent={true} visible={!!imagePreview} animationType="slide">
-  <View style={styles.modalContainer}>
-    {/* Conditionally render header or toast */}
-    <View style={styles.modalHeader}>
-      {toastMessage ? (
-        <Text style={styles.toastText}>{toastMessage}</Text>
-      ) : (
-        <Text style={styles.headingText}>Item Preview</Text>
-      )}
-    </View>
- 
-    <View style={styles.ppreviewModalContent}>
-      {imagePreview ? (
-        <Image source={{ uri: imagePreview }} style={styles.fullImage} />
-      ) : (
-        <Text>No Image Available</Text>
-      )}
-      <Button title="Close" onPress={() => setImagePreview(null)} />
-    </View>
- 
-    <View style={styles.modalFooter}>
-      <TouchableOpacity
-        onPress={() => {
-          handleSaveImage();
-          showToast('Image Saved');
-        }}>
-        <Text style={styles.buttonTextModal}>Save</Text>
-      </TouchableOpacity>
- 
-      <TouchableOpacity
-        onPress={() => {
-          handleShare();
-          showToast('Shared Successfully');
-        }}>
-        <Text style={styles.buttonTextModal}>Share</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
- 
+        <View style={styles.modalContainer}>
+          {/* Conditionally render header or toast */}
+          <View style={styles.modalHeader}>
+            {toastMessage ? (
+              <Text style={styles.toastText}>{toastMessage}</Text>
+            ) : (
+              <Text style={styles.headingText}>Item Preview</Text>
+            )}
+          </View>
+
+          <View style={styles.ppreviewModalContent}>
+            {imagePreview ? (
+              <Image source={{uri: imagePreview}} style={styles.fullImage} />
+            ) : (
+              <Text>No Image Available</Text>
+            )}
+            <Button title="Close" onPress={() => setImagePreview(null)} />
+          </View>
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              onPress={() => {
+                handleSaveImage();
+                showToast('Image Saved');
+              }}>
+              <Text style={styles.buttonTextModal}>Save</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                handleShareImage();
+                showToast('Shared Successfully');
+              }}>
+              <Text style={styles.buttonTextModal}>Share</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Video Preview Modal */}
       <Modal transparent={true} visible={!!videoPreview} animationType="slide">
-  <View style={styles.modalContainer}>
-  <View style={styles.modalHeader}>
-      {toastMessage ? (
-        <Text style={styles.toastText}>{toastMessage}</Text>
-      ) : (
-        <Text style={styles.headingText}>Item Preview</Text>
-      )}
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            {toastMessage ? (
+              <Text style={styles.toastText}>{toastMessage}</Text>
+            ) : (
+              <Text style={styles.headingText}>Item Preview</Text>
+            )}
+          </View>
+          <View style={styles.ppreviewModalContent}>
+            {videoPreview ? (
+              <Video
+                source={{uri: videoPreview}}
+                style={styles.fullImage}
+                controls={true}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text>No Video Available</Text>
+            )}
+            <Button title="Close" onPress={() => setVideoPreview(null)} />
+          </View>
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              onPress={() => {
+                handleSaveVideo();
+                showToast('video Saved');
+              }}>
+              <Text style={styles.buttonTextModal}>Save</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                handleShareVideo();
+                showToast('Shared Successfully');
+              }}>
+              <Text style={styles.buttonTextModal}>Share</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
-    <View style={styles.ppreviewModalContent}>
-      {videoPreview ? (
-        <Video
-          source={{ uri: videoPreview }}
-          style={styles.fullImage}
-          controls={true}
-          resizeMode="contain"
-        />
-      ) : (
-        <Text>No Video Available</Text>
-      )}
-      <Button title="Close" onPress={() => setVideoPreview(null)} />
-    </View>
-    <View style={styles.modalFooter}>
-      <TouchableOpacity
-        onPress={() => {
-          handleSaveImage();
-          showToast('Image Saved');
-        }}>
-        <Text style={styles.buttonTextModal}>Save</Text>
-      </TouchableOpacity>
- 
-      <TouchableOpacity
-        onPress={() => {
-          handleShare();
-          showToast('Shared Successfully');
-        }}>
-        <Text style={styles.buttonTextModal}>Share</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
-</View>
   );
 };
- 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -768,21 +755,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   mediaHeaderContainer: {
-    alignSelf: 'stretch', 
-    marginHorizontal: -20, 
-    backgroundColor: 'white', 
+    alignSelf: 'stretch',
+    marginHorizontal: -20,
+    backgroundColor: 'white',
     borderBottomWidth: 10,
     borderBottomColor: 'lightblue',
     paddingVertical: 10,
-    marginTop: 15, 
+    marginTop: 15,
   },
   mediaHeading: {
     color: 'blue',
     fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 25, 
-    marginBottom: 10, 
-
+    marginLeft: 25,
+    marginBottom: 10,
   },
   dateContainer: {
     marginTop: 15,
@@ -836,7 +822,7 @@ const styles = StyleSheet.create({
     width: '45%',
     alignItems: 'center',
   },
- 
+
   closeButton: {
     backgroundColor: 'red',
   },
@@ -905,15 +891,14 @@ const styles = StyleSheet.create({
     height: Dimensions.get('window').height / 2,
     borderRadius: 10,
     marginBottom: 10,
-    backgroundColor:'black',
+    backgroundColor: 'black',
   },
- 
+
   buttonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    marginTop:-30,
- 
+    marginTop: -30,
   },
   dateButton: {
     backgroundColor: 'white',
@@ -936,7 +921,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
   },
- 
+
   buttonSpacer: {
     width: 15,
   },
@@ -1023,8 +1008,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
- 
- 
+
   buttonTextModal: {
     fontSize: 16,
     color: 'blue',
@@ -1039,8 +1023,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
     borderBottomWidth: 1,
     borderBottomColor: 'grey',
-      },
- 
+  },
+
   headingText: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -1055,5 +1039,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
- 
+
 export default FloatingActionButton;

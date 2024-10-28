@@ -1,5 +1,4 @@
-// redux/imageSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const IMAGE_STORAGE_KEY = '@images';
@@ -16,8 +15,8 @@ const imageSlice = createSlice({
   name: 'images',
   initialState,
   reducers: {
-    addImage: (state, action: PayloadAction<{ uri: string; date: string }>) => {
-      const { uri, date } = action.payload;
+    addImage: (state, action: PayloadAction<{uri: string; date: string}>) => {
+      const {uri, date} = action.payload;
       if (!state.byDate[date]) {
         state.byDate[date] = [];
       }
@@ -26,14 +25,16 @@ const imageSlice = createSlice({
     loadImages: (state, action: PayloadAction<Record<string, string[]>>) => {
       state.byDate = action.payload;
     },
-    clearImages: (state) => {
-      return { byDate: {} };
+    clearImages: state => {
+      return {byDate: {}};
     },
   },
 });
 
 // AsyncStorage functions
-export const saveImagesToStorage = async (images: Record<string, string[]>): Promise<void> => {
+export const saveImagesToStorage = async (
+  images: Record<string, string[]>,
+): Promise<void> => {
   try {
     const jsonValue = JSON.stringify(images);
     await AsyncStorage.setItem(IMAGE_STORAGE_KEY, jsonValue);
@@ -42,15 +43,17 @@ export const saveImagesToStorage = async (images: Record<string, string[]>): Pro
   }
 };
 
-export const loadImagesFromStorage = async (): Promise<Record<string, string[]>> => {
+export const loadImagesFromStorage = async (): Promise<
+  Record<string, string[]>
+> => {
   try {
     const jsonValue = await AsyncStorage.getItem(IMAGE_STORAGE_KEY);
-    return jsonValue ? JSON.parse(jsonValue) : {}; 
+    return jsonValue ? JSON.parse(jsonValue) : {};
   } catch (e) {
     console.error('Failed to load images:', e);
-    return {}; 
+    return {};
   }
 };
 
-export const { addImage, loadImages, clearImages } = imageSlice.actions;
+export const {addImage, loadImages, clearImages} = imageSlice.actions;
 export default imageSlice.reducer;

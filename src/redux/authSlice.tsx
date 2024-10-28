@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppDispatch } from './store'; 
+import {AppDispatch} from './store';
 
 interface User {
   name: string;
@@ -29,24 +29,27 @@ const authSlice = createSlice({
       state.users.push(action.payload);
       AsyncStorage.setItem('users', JSON.stringify(state.users));
     },
-    login: (state, action: PayloadAction<{ email: string; password: string }>) => {
-      const { email, password } = action.payload;
+    login: (
+      state,
+      action: PayloadAction<{email: string; password: string}>,
+    ) => {
+      const {email, password} = action.payload;
       const foundUser = state.users.find(
-        (user) => user.email === email && user.password === password
+        user => user.email === email && user.password === password,
       );
       if (foundUser) {
         state.isLoggedIn = true;
         state.user = foundUser;
-        AsyncStorage.setItem('isLoggedIn', 'true'); 
+        AsyncStorage.setItem('isLoggedIn', 'true');
       } else {
         state.isLoggedIn = false;
         state.user = null;
       }
     },
-    logout: (state) => {
+    logout: state => {
       state.isLoggedIn = false;
       state.user = null;
-      AsyncStorage.setItem('isLoggedIn', 'false'); 
+      AsyncStorage.setItem('isLoggedIn', 'false');
     },
     loadUsers: (state, action: PayloadAction<User[]>) => {
       state.users = action.payload;
@@ -57,9 +60,10 @@ const authSlice = createSlice({
   },
 });
 
-export const { register, login, logout, loadUsers, setLoginState } = authSlice.actions;
+export const {register, login, logout, loadUsers, setLoginState} =
+  authSlice.actions;
 
-export const loadUsersFromStorage = () => async (dispatch: AppDispatch) => { 
+export const loadUsersFromStorage = () => async (dispatch: AppDispatch) => {
   try {
     const users = await AsyncStorage.getItem('users');
     if (users) {

@@ -1,6 +1,6 @@
-import { configureStore } from '@reduxjs/toolkit';
-import imageReducer, { loadImages, loadImagesFromStorage } from './imageSlice';
-import authReducer, { loadUsersFromStorage } from './authSlice';
+import {configureStore} from '@reduxjs/toolkit';
+import imageReducer, {loadImages, loadImagesFromStorage} from './imageSlice';
+import authReducer, {loadUsersFromStorage} from './authSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,7 +11,7 @@ const store = configureStore({
 
 export interface RootState {
   images: {
-    byDate: Record<string, unknown>; 
+    byDate: Record<string, unknown>;
   };
   auth: {
     isLoggedIn: boolean;

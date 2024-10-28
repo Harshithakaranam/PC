@@ -1,16 +1,20 @@
-// components/LoginScreen.tsx
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { login, register } from '../redux/authSlice';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+import {login, register} from '../redux/authSlice';
 import Toast from 'react-native-toast-message';
-import { RootState } from '../redux/store'; // Adjust the import based on your store file structure
+import {RootState} from '../redux/store';
 
 const LoginScreen: React.FC = () => {
   const dispatch = useDispatch();
   const users = useSelector((state: RootState) => state.auth.users);
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -28,7 +32,7 @@ const LoginScreen: React.FC = () => {
           });
           return;
         }
-        if (users.find((user: { email: string; }) => user.email === email)) {
+        if (users.find((user: {email: string}) => user.email === email)) {
           Toast.show({
             type: 'error',
             text1: 'Registration Failed',
@@ -36,7 +40,7 @@ const LoginScreen: React.FC = () => {
           });
           return;
         }
-        const userData = { name, email, password, phoneNumber };
+        const userData = {name, email, password, phoneNumber};
         dispatch(register(userData));
         Toast.show({
           type: 'success',
@@ -65,10 +69,12 @@ const LoginScreen: React.FC = () => {
           });
           return;
         }
-        const userExists = users.find((user: { email: string; }) => user.email === email);
+        const userExists = users.find(
+          (user: {email: string}) => user.email === email,
+        );
         if (userExists) {
           if (userExists.password === password) {
-            dispatch(login({ email, password }));
+            dispatch(login({email, password}));
           } else {
             Toast.show({
               type: 'error',
@@ -100,16 +106,6 @@ const LoginScreen: React.FC = () => {
     setEmail('');
     setPassword('');
   };
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      Toast.show({
-        type: 'success',
-        text1: 'Login Successful',
-      });
-    }
-  }, [isLoggedIn]);
-
   return (
     <View style={styles.container}>
       {isRegistering && (
@@ -152,11 +148,13 @@ const LoginScreen: React.FC = () => {
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{isRegistering ? "Register" : "Login"}</Text>
+        <Text style={styles.buttonText}>
+          {isRegistering ? 'Register' : 'Login'}
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.switchButton} onPress={handleSwitchMode}>
         <Text style={styles.switchButtonText}>
-          {isRegistering ? "Switch to Login" : "Switch to Register"}
+          {isRegistering ? 'Switch to Login' : 'Switch to Register'}
         </Text>
       </TouchableOpacity>
     </View>
